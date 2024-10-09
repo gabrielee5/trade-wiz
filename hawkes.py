@@ -4,6 +4,8 @@ import pandas_ta as ta
 import matplotlib.pyplot as plt
 import scipy 
 
+# doesnt work yet
+
 def plot_two_axes(series1, *ex_series):
     plt.style.use('dark_background')
     ax = series1.plot(color='green')

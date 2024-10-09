@@ -56,14 +56,14 @@ class CustomStrategy(Strategy):
                 self.buy()
             elif self.position.is_short:
                 self.position.close()
-                self.buy()
+                self.buy() # inverts the position
         
         elif self.close_change[-1] * -1 > self.atr[-2]:
             if not self.position:
                 self.sell()
             elif self.position.is_long:
                 self.position.close()
-                self.sell()
+                self.sell() # inverts the position
 
 def load_data(file_path):
     df = pd.read_csv(file_path, parse_dates=['timestamp'], index_col='timestamp')
@@ -97,13 +97,13 @@ def custom_plot(results, original_data):
 
 def main():
     # Load data
-    data = load_data('/Users/gabrielefabietti/projects/fetch_data/data/ETHUSDT_perp_1h_2022-01-01_to_2023-01-01.csv')
+    data = load_data('data/SOLUSDT_perp_1h_concatenated.csv')
 
     # Preprocess data
     data = preprocess_data(data, CustomStrategy.resample_int)
 
     # Create a Backtest instance
-    bt = Backtest(data, CustomStrategy, cash=10000, commission=.002)
+    bt = Backtest(data, CustomStrategy, cash=100000, commission=.002)
     
     # Run the backtest
     results = bt.run()
