@@ -3,8 +3,6 @@ import numpy as np
 from backtesting import Backtest, Strategy
 import matplotlib.pyplot as plt
 
-# template to test new strategies
-# the interesting strategies will be saves in a separate folder
 
 def calculate_atr(high, low, close, period=14):
     tr = np.maximum(high - low, np.abs(high - close.shift(1)), np.abs(low - close.shift(1)))
