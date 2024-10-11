@@ -4,6 +4,7 @@ from backtesting import Backtest, Strategy
 import matplotlib.pyplot as plt
 import mplfinance as mpf
 import os
+from data_file_saving import save_trade_data_to_csv, convert_csv_to_xlsx
 
 # template to test new strategies
 # the interesting strategies will be saves in a separate folder
@@ -160,18 +161,6 @@ def display_dataframe_with_trades(trade_rows):
     print("\nDataframe with Trade Signals (including two previous rows for each trade):")
     print(trade_rows.to_string())
 
-def save_trade_data_to_csv(trade_rows, strategy_name, asset_name):
-    # Ensure the 'trades_csv' directory exists
-    os.makedirs('trades_csv', exist_ok=True)
-    
-    # Create filename using strategy name and asset name
-    filename = f"{strategy_name}_{asset_name}_trades.csv"
-    
-    # Save the dataframe to a CSV file in the 'trades_csv' directory
-    filepath = os.path.join('trades_csv', filename)
-    trade_rows.to_csv(filepath)
-    print(f"\nTrade data has been saved to {filepath}")
-
 def main():
     # Load data
     data = load_data('data/SOLUSDT_perp_1h_concatenated.csv')
@@ -199,7 +188,8 @@ def main():
     display_dataframe_with_trades(trade_data)
     
     # Save trade data to CSV
-    save_trade_data_to_csv(trade_data, strategy_name="ATRtrend", asset_name="SOLUSDT")
+    file_path = save_trade_data_to_csv(trade_data, strategy_name="ATRtrend", asset_name="SOLUSDT")
+    convert_csv_to_xlsx(file_path)
 
 if __name__ == "__main__":
     main()
