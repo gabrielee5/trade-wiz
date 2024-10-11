@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 from backtesting import Backtest, Strategy
 import matplotlib.pyplot as plt
+import mplfinance as mpf
+import os
 
 # template to test new strategies
 # the interesting strategies will be saves in a separate folder
@@ -72,6 +74,11 @@ def load_data(file_path):
     df = df.rename(columns={col: col.capitalize() for col in df.columns})
     return df
 
+def print_trades_table(results):
+    trades = results['_trades']
+    print("\nTrades Table:")
+    print(trades.to_string(index=False))
+    
 def custom_plot(results, original_data):
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
     
@@ -97,6 +104,74 @@ def custom_plot(results, original_data):
     plt.tight_layout()
     plt.show()
 
+def get_trade_data(data, results):
+    # Create a copy of the dataframe to avoid modifying the original
+    df = data.copy()
+
+    # Add columns for trade signals
+    df['Buy_Signal'] = 0
+    df['Sell_Signal'] = 0
+    df['Exit_Signal'] = 0
+
+    # Mark the trade signals
+    for trade in results['_trades'].itertuples():
+        if trade.Size > 0:  # Buy trade
+            df.loc[trade.EntryTime, 'Buy_Signal'] = 1
+            df.loc[trade.ExitTime, 'Exit_Signal'] = 1
+        elif trade.Size < 0:  # Sell trade
+            df.loc[trade.EntryTime, 'Sell_Signal'] = 1
+            df.loc[trade.ExitTime, 'Exit_Signal'] = 1
+
+    # Select relevant columns
+    columns_to_display = ['Open', 'High', 'Low', 'Close', 'Volume', 
+                          f'Resample_{ATRtrend.resample_int}_ATR', 
+                          f'Resample_{ATRtrend.resample_int}_CloseChange',
+                          'Buy_Signal', 'Sell_Signal', 'Exit_Signal']
+    
+    df_display = df[columns_to_display]
+
+    # Get indices of rows with trade signals
+    trade_indices = df_display.index[
+        (df_display['Buy_Signal'] == 1) | 
+        (df_display['Sell_Signal'] == 1) | 
+        (df_display['Exit_Signal'] == 1)
+    ]
+
+    # Function to get rows around a trade
+    def get_trade_rows(idx):
+        start_idx = max(0, df_display.index.get_loc(idx) - 2)
+        return df_display.iloc[start_idx:df_display.index.get_loc(idx) + 1]
+
+    # Collect rows for all trades
+    trade_rows = pd.concat([get_trade_rows(idx) for idx in trade_indices])
+
+    # Remove duplicate rows (in case of consecutive trades)
+    trade_rows = trade_rows.drop_duplicates()
+
+    return trade_rows
+
+def display_dataframe_with_trades(trade_rows):
+    # Display the dataframe
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', None)
+    pd.set_option('display.max_colwidth', None)
+
+    print("\nDataframe with Trade Signals (including two previous rows for each trade):")
+    print(trade_rows.to_string())
+
+def save_trade_data_to_csv(trade_rows, strategy_name, asset_name):
+    # Ensure the 'trades_csv' directory exists
+    os.makedirs('trades_csv', exist_ok=True)
+    
+    # Create filename using strategy name and asset name
+    filename = f"{strategy_name}_{asset_name}_trades.csv"
+    
+    # Save the dataframe to a CSV file in the 'trades_csv' directory
+    filepath = os.path.join('trades_csv', filename)
+    trade_rows.to_csv(filepath)
+    print(f"\nTrade data has been saved to {filepath}")
+
 def main():
     # Load data
     data = load_data('data/SOLUSDT_perp_1h_concatenated.csv')
@@ -110,11 +185,21 @@ def main():
     # Run the backtest
     results = bt.run()
     
-    # Print results
+    # Print results summary
     print(results)
     
+    # Print trades table
+    # print_trades_table(results)
+    
     # Plot the backtest results using custom function
-    custom_plot(results, data)
+    # custom_plot(results, data)
+
+    # Get and display trade data
+    trade_data = get_trade_data(data, results)
+    display_dataframe_with_trades(trade_data)
+    
+    # Save trade data to CSV
+    save_trade_data_to_csv(trade_data, strategy_name="ATRtrend", asset_name="SOLUSDT")
 
 if __name__ == "__main__":
     main()
