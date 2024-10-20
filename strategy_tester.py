@@ -56,14 +56,14 @@ class ATRtrend(Strategy):
 
 
     def next(self):
-        if self.close_change[-1] > self.atr[-2]:
+        if self.close_change[-1] > self.atr[-1]:
             if not self.position:
                 self.buy()
             elif self.position.is_short:
                 self.position.close()
                 self.buy() # inverts the position
         
-        elif self.close_change[-1] * -1 > self.atr[-2]:
+        elif self.close_change[-1] * -1 > self.atr[-1]:
             if not self.position:
                 self.sell()
             elif self.position.is_long:
@@ -140,7 +140,7 @@ def get_trade_data(data, results):
 
     # Function to get rows around a trade
     def get_trade_rows(idx):
-        start_idx = max(0, df_display.index.get_loc(idx) - 2)
+        start_idx = max(0, df_display.index.get_loc(idx) - 6)
         return df_display.iloc[start_idx:df_display.index.get_loc(idx) + 1]
 
     # Collect rows for all trades
@@ -163,7 +163,7 @@ def display_dataframe_with_trades(trade_rows):
 
 def main():
     # Load data
-    data = load_data('data/SOLUSDT_perp_1h_concatenated.csv')
+    data = load_data('data/ETHUSDT_perp_1h_concatenated.csv')
 
     # Preprocess data
     data = preprocess_data(data, ATRtrend.resample_int)
@@ -188,7 +188,7 @@ def main():
     display_dataframe_with_trades(trade_data)
     
     # Save trade data to CSV
-    file_path = save_trade_data_to_csv(trade_data, strategy_name="ATRtrend", asset_name="SOLUSDT")
+    file_path = save_trade_data_to_csv(trade_data, strategy_name="ATRtrend", asset_name="ETHUSDT")
     convert_csv_to_xlsx(file_path)
 
 if __name__ == "__main__":
