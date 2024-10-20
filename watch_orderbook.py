@@ -59,7 +59,7 @@ async def main():
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main())
+        asyncio.run(main2())
     except KeyboardInterrupt:
         logging.info("Script interrupted by user")
     except Exception as e:
