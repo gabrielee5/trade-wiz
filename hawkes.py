@@ -6,6 +6,8 @@ import scipy
 
 # doesnt work yet
 
+# this is the original strat file. It doesnt run but it is useful for the strat logic
+
 def plot_two_axes(series1, *ex_series):
     plt.style.use('dark_background')
     ax = series1.plot(color='green')
@@ -105,9 +107,9 @@ def get_trades_from_signal(data: pd.DataFrame, signal: np.array):
     return long_trades, short_trades
 
 
-data = pd.read_csv('/Users/gabrielefabietti/projects/fetch_data/data/ETHUSDT_perp_1h_2021-06-01_to_2022-01-01.csv')
-data['date'] = data['date'].astype('datetime64[s]')
-data = data.set_index('date')
+data = pd.read_csv('data/SOLUSDT_perp_1h_concatenated.csv')
+data['timestamp'] = data['timestamp'].astype('datetime64[s]')
+data = data.set_index('timestamp')
 
 # Normalize volume
 norm_lookback = 336
