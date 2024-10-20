@@ -66,8 +66,27 @@ class ATRtrend(Strategy):
                 self.sell() # inverts the position
 
 def load_data(file_path):
-    df = pd.read_csv(file_path, parse_dates=['timestamp'], index_col='timestamp')
-    df = df.rename(columns={col: col.capitalize() for col in df.columns})
+    # Read the CSV file
+    df = pd.read_csv(file_path)
+    
+    # Convert timestamp from milliseconds to datetime
+    df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+    
+    # Set timestamp as index
+    df.set_index('timestamp', inplace=True)
+    
+    # Ensure column names are lowercase
+    df.columns = df.columns.str.lower()
+    
+    # Ensure specific columns are present and in correct order
+    required_columns = ['open', 'high', 'low', 'close', 'volume']
+    for col in required_columns:
+        if col not in df.columns:
+            raise ValueError(f"Required column '{col}' not found in the data.")
+    
+    # Reorder columns to ensure they match the required format
+    df = df[required_columns + [col for col in df.columns if col not in required_columns]]
+    
     return df
 
 def custom_plot(results, original_data):
@@ -97,7 +116,7 @@ def custom_plot(results, original_data):
 
 def main():
     # Load data
-    data = load_data('data/SOLUSDT_perp_1h_concatenated.csv')
+    data = load_data('data/SOLUSDT_60_data.csv')
 
     # Preprocess data
     data = preprocess_data(data, ATRtrend.resample_int)
